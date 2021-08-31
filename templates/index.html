@@ -16,6 +16,12 @@
 				<input type="text" name="url" id="url" />
 				<input type="submit" value="Shorten my URL" />
 			</form>
+			{% if url %}
+			<section>
+				Your shortened url:
+				<a href="{{url}}">{{url}}</a>
+			</section>
+			{% endif %}
 		</main>
 	</body>
 </html>
