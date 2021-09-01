@@ -1,13 +1,14 @@
-from flask import Flask, request, render_template
+from flask import Flask, jsonify, request, render_template
 from flask_sqlalchemy import SQLAlchemy
-
+from config import DATABASE_URI
+import os
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://username:password@localhost:5342/urls'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL', DATABASE_URI)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.app_context().push()
-db = SQLAlchemy()
+db = SQLAlchemy(app)
 db.init_app(app)
 db.create_all()
 
@@ -29,8 +30,13 @@ def home():
     else:
         url = URL(request.form["url"], request.form["url"])
         db.session.add(url)
+        db.session.commit()
         return render_template('index.html', url=url.shortened_url)
 
 
-if __name__ == '__main__':
-    app.run()
+@ app.route('/urls')
+def index():
+    data = URL.query.all()
+    response = [{"url": element.url, "shortened_url": element.shortened_url}
+                for element in data]
+    return jsonify({"data": response})
