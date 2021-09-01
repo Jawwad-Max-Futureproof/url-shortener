@@ -4,6 +4,7 @@ from config import DATABASE_URI
 import os
 import random
 import string
+import validators
 
 app = Flask(__name__)
 
@@ -31,6 +32,9 @@ def home():
         return render_template('index.html')
     else:
         url_posted = False
+        is_url_valid = validators.url(request.form['url'])
+        if is_url_valid != True:
+            return render_template('index.html', invalid_url=is_url_valid.args[1]['value'])
         while not url_posted:
             short_url = ''.join(random.choices(string.ascii_letters, k=15))
             data = URL.query.filter_by(shortened_url=short_url)
@@ -57,7 +61,4 @@ def redirect_to_url(url_id):
     if not url:
         return redirect('/')
     else:
-        if url.url[0:4] == 'http':
-            return redirect(url.url)
-        else:
-            return redirect(f'http://{url.url}')
+        return redirect(url.url)

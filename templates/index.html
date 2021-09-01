@@ -21,6 +21,15 @@
 				Your shortened url:
 				<a href="{{url}}">{{host}}{{url}}</a>
 			</section>
+			{% endif %} {% if invalid_url %}
+			<section>
+				<p>{{invalid_url}} is not a valid URL.</p>
+				<p>
+					URLs must start with <i>http://</i> or <i>https://</i> and end with a domain (e.g
+					<i>.com</i>)
+				</p>
+				<p>Please try again with a valid url</p>
+			</section>
 			{% endif %}
 		</main>
 	</body>
