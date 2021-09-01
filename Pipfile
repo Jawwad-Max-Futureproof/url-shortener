@@ -8,6 +8,7 @@ flask = "*"
 flask-sqlalchemy = "*"
 psycopg2 = "*"
 validators = "*"
+gunicorn = "*"
 
 [dev-packages]
 autopep8 = "*"
