@@ -1,11 +1,13 @@
 from flask import Flask, jsonify, redirect, request, render_template
 from flask_sqlalchemy import SQLAlchemy
-from config import DATABASE_URI
 import os
 import random
 import string
 import validators
-
+if os.environ['FLASK_ENV'] == 'development':
+    from config import DATABASE_URI
+else:
+    DATABASE_URI = ''
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
