@@ -1,21 +1,25 @@
-from flask import Flask, request, render_template
+from flask import Flask, jsonify, redirect, request, render_template
 from flask_sqlalchemy import SQLAlchemy
-
+from config import DATABASE_URI
+import os
+import random
+import string
+import validators
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://username:password@localhost:5342/urls'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL', DATABASE_URI)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.app_context().push()
-db = SQLAlchemy()
+db = SQLAlchemy(app)
 db.init_app(app)
 db.create_all()
 
 
 class URL(db.Model):
     __tablename__ = 'urls'
-    shortened_url = db.Column(db.String(5000), primary_key=True)
-    url = db.Column(db.String(5000), nullable=False)
+    shortened_url = db.Column(db.Text, primary_key=True)
+    url = db.Column(db.Text, nullable=False)
 
     def __init__(self, url, shortened_url):
         self.url = url
@@ -27,10 +31,34 @@ def home():
     if request.method == "GET":
         return render_template('index.html')
     else:
-        url = URL(request.form["url"], request.form["url"])
+        url_posted = False
+        is_url_valid = validators.url(request.form['url'])
+        if is_url_valid != True:
+            return render_template('index.html', invalid_url=is_url_valid.args[1]['value'])
+        while not url_posted:
+            short_url = ''.join(random.choices(string.ascii_letters, k=15))
+            data = URL.query.filter_by(shortened_url=short_url)
+            if data.count() == 0:
+                url_posted = True
+        url = URL(request.form["url"], short_url)
         db.session.add(url)
-        return render_template('index.html', url=url.shortened_url)
+        db.session.commit()
+        host = os.environ.get('BASE_HOST_URL', 'http://127.0.0.1:5000/')
+        return render_template('index.html', host=host, url=url.shortened_url)
 
 
-if __name__ == '__main__':
-    app.run()
+@app.route('/urls/')
+def index():
+    data = URL.query.all()
+    response = [{"url": element.url, "shortened_url": element.shortened_url}
+                for element in data]
+    return jsonify({"data": response})
+
+
+@app.route('/<string:url_id>/')
+def redirect_to_url(url_id):
+    url = URL.query.filter_by(shortened_url=url_id).first()
+    if not url:
+        return redirect('/')
+    else:
+        return redirect(url.url)

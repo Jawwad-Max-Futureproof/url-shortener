@@ -13,13 +13,22 @@
 			<h1>URL Shortener</h1>
 			<form method="POST">
 				<label for="url">Enter a URL to shorten:</label>
-				<input type="text" name="url" id="url" />
+				<input type="text" name="url" id="url" required />
 				<input type="submit" value="Shorten my URL" />
 			</form>
 			{% if url %}
 			<section>
-				Your shortened url:
-				<a href="{{url}}">{{url}}</a>
+				<h2>Your shortened url:</h2>
+				<a href="{{url}}" target="_blank">{{host}}{{url}}</a>
+			</section>
+			{% endif %} {% if invalid_url %}
+			<section>
+				<p>{{invalid_url}} is not a valid URL.</p>
+				<p>
+					URLs must start with <i>http://</i> or <i>https://</i> and end with a domain (e.g
+					<i>.com</i>)
+				</p>
+				<p>Please try again with a valid url</p>
 			</section>
 			{% endif %}
 		</main>
