@@ -16,7 +16,10 @@ cd url-shortener
 pipenv shell
 pipenv install
 ```
-
+- Note: you need to create a config file with a postgres database setup, the following format should be used:
+```
+DATABSE_URI = postgresql://username:password@host:port/db_name
+```
 ### Usage
 
 - To start a dev server run `pipenv run dev`
